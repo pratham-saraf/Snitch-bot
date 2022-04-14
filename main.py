@@ -2,43 +2,49 @@ import os
 import discord
 from discord.ext import commands
 import asyncio
-import dns
 from stay_on import alive
-
-
 
 
 TOKEN = os.environ['TOKEN']
 
 bot = commands.Bot(command_prefix="$")
 
-user = None
-feelings = None
+
+success = discord.Embed(
+                        title ='Successfully confessed',
+                        description='Dil Khush ho gya?'
+                     )
+success.set_image(url="https://cdn.discordapp.com/attachments/944541869268951060/944622439684522024/Inko-kya-hi-pata-chalega.jpg")
+success.set_footer(text="Do $confess in my DMs to confess")
 
 @bot.event
 async def on_ready():
   print("spilling all secrets")
 
 @bot.command()
+@commands.cooldown(2.0, 600.0, commands.BucketType.user)
 async def confess(ctx,*args):
     
     if ctx.channel.type == discord.ChannelType.private:
         argcount = len(args)
         if argcount >= 1:
-            message = discord.Embed(
-          title ='USE $confess then confess',
-          description='Are you trying to break me ? noob',
-          colour = 0xc8a2c8
-          )
-            message.set_footer(text="are you mad or wot? next time try $confess first")
-            message.set_image(url="https://cdn.discordapp.com/attachments/944541869268951060/944594491493466162/lids9cS6ow1V.jpg")
-
-            send = await ctx.send(embed=message)
+            
+            message = (' '.join(args))
+            #print(message)
+            response = discord.Embed(
+                        title ='New Confession!',
+                        description=f'{message}'
+                     )
+            response.set_footer(text="Do $confess in my DMs to confess")
+            channel = bot.get_channel(int(os.environ['CHANNEL']))
+            await channel.send(embed=response)
+            
+            send = await ctx.send(embed=success)
                     
         else:
             response = discord.Embed(
               title ='Hue Hue Hue 🌚',
-              description='What you want to conefss?',
+              description='What you want to confess?',
               colour = 0xc8a2c8
               )
             response.set_footer(text="It will timeout in 30 secs")
@@ -46,8 +52,7 @@ async def confess(ctx,*args):
             send = await ctx.send(embed=response)
     
             try:
-                global feelings
-                global user
+                
                 confession = await bot.wait_for(
                         'message',
                         timeout=30,
@@ -64,12 +69,7 @@ async def confess(ctx,*args):
                     channel = bot.get_channel(int(os.environ['CHANNEL']))
                     await channel.send(embed=response)
                     
-                    success = discord.Embed(
-                        title ='Successfully confessed',
-                        description='Dil Khush ho gya?'
-                     )
-                    success.set_image(url="https://cdn.discordapp.com/attachments/944541869268951060/944622439684522024/Inko-kya-hi-pata-chalega.jpg")
-                    success.set_footer(text="Do $confess in my DMs to confess")
+                    
                     await ctx.send(embed=success)
             except asyncio.TimeoutError:
                 message = discord.Embed(
@@ -86,9 +86,22 @@ async def confess(ctx,*args):
           colour = 0xc8a2c8
           )
         message.set_footer(text="are you mad or wot? next time try DM'ing me!")
-        message.set_image(url="https://cdn.discordapp.com/attachments/944541869268951060/944596596056797224/download_1.jpeg")
+        message.set_image(url="https://cdn.discordapp.com/attachments/94454186928951060/944596596056797224/download_1.jpeg")
 
         send = await ctx.send(embed=message)
+
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error , commands.CommandOnCooldown):
+        message = discord.Embed(
+          title ='Stop it get some help!',
+          description='you are on a cooldown for {:.1f} mins'.format((error.retry_after)/60),
+          colour = 0xc8a2c8
+          )
+        message.set_footer(text="Abe Padhai likhai karo IAS-YAS bano!")
+        message.set_image(url="https://cdn.discordapp.com/attachments/946415206995746866/960491202510192640/stop.jpeg")
+        send = await ctx.send(embed=message)
+        
     
 
 alive()
