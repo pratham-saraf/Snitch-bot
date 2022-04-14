@@ -22,7 +22,7 @@ async def on_ready():
   print("spilling all secrets")
 
 @bot.command()
-@commands.cooldown(2.0, 600.0, commands.BucketType.user)
+@commands.cooldown(2.0, 300.0, commands.BucketType.user)
 async def confess(ctx,*args):
     
     if ctx.channel.type == discord.ChannelType.private:
